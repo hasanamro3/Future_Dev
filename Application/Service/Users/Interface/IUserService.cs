@@ -8,13 +8,13 @@ namespace Application.Service.Students.Interface
 {
     public interface IUserService
     {
-        Task<User> SystemAdminProfile();
-        Task<Student> StudentProfile();
+        Task<AdminProfileResponseDto> SystemAdminProfile();
+        Task<StudentResponseDto> StudentProfile();
         Task UpdateUserProfile(StudentProfileUpdateDto dto);
         Task UpdateAdminProfile(AdminProfileUpdateDto dto);
         Task DeleteStudent(int id);
-        Task<Student?> GetStudent(int id);
-        Task<List<Student>> GetAllStudents();
-        Task UpdateStudentProfileByAdmin(EditStudentProfileDto input);
+        Task<StudentResponseDto?> GetStudent(int id);
+        Task<List<StudentResponseDto>> GetAllStudents();
+        Task UpdateStudentProfileByAdmin(AdminProfileResponseDto input);
     }
 }

@@ -59,7 +59,7 @@ public class UsersController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("updateStudentProfile/{id}")]
-    public async Task<IActionResult> UpdateStudentProfileByAdmin(int id, [FromBody] EditStudentProfileDto dto)
+    public async Task<IActionResult> UpdateStudentProfileByAdmin(int id, [FromBody] AdminProfileResponseDto dto)
     {
         dto.StudentId = id;
         await _userService.UpdateStudentProfileByAdmin(dto);
@@ -68,7 +68,7 @@ public class UsersController : ControllerBase
 
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("profileAdmin")]
+    [HttpGet("SystemAdminProfile")]
     public async Task<IActionResult> SystemAdminProfile()
     {
         var student = await _userService.SystemAdminProfile();
@@ -76,7 +76,7 @@ public class UsersController : ControllerBase
     }
 
     [Authorize(Roles = "User")]
-    [HttpGet("studentProfile")]
+    [HttpGet("GetStudentProfile")]
     public async Task<IActionResult> GetStudentProfile()
     {
         var student = await _userService.StudentProfile();

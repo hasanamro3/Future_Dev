@@ -7,14 +7,8 @@ using Application.Service.Students.Interface;
 using Domain.Entites.Enums;
 using Domain.Entites.Models;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Application.Service.Students.Implementation
 {
@@ -49,46 +43,104 @@ namespace Application.Service.Students.Implementation
             await _userRepo.SaveChanges();
         }
 
-        public async Task<List<Student>> GetAllStudents()
+        public async Task<List<StudentResponseDto>> GetAllStudents()
         {
-            return await _studentRepo.GetAll().Include(s => s.User).ToListAsync();
+            return await _studentRepo.GetAll()
+                .Include(s => s.User)
+                    .ThenInclude(u => u.Role)
+                .Select(s => new StudentResponseDto
+                {
+                    StudentId = s.StudentId,
+                    UniversityName = s.UnivercityName,
+                    BirthDate = s.BirthDate,
+
+                    UserId = s.User!.UserId,
+                    FullName = s.User.FullName,
+                    Email = s.User.Email,
+                    UserRole = s.User.Role!.RoleName
+                }).ToListAsync();
         }
 
-        public async Task<Student?> GetStudent(int studentId)
+
+        public async Task<StudentResponseDto?> GetStudent(int studentId)
         {
-            var student=  await _studentRepo.GetAll().Include(s => s.User).Include(s => s.Enrollments)
+            var student = await _studentRepo.GetAll()
+                .Include(s => s.User)
+                    .ThenInclude(u => u.Role)
                 .FirstOrDefaultAsync(s => s.StudentId == studentId);
 
-            if(student == null)  throw new InvalidOperationException("Student not found."); 
+            if (student == null)
+                throw new InvalidOperationException("Student not found.");
 
-            return student;
+            return new StudentResponseDto
+            {
+                StudentId = student.StudentId,
+                UniversityName = student.UnivercityName,
+                BirthDate = student.BirthDate,
+
+                UserId = student.User!.UserId,
+                FullName = student.User.FullName,
+                Email = student.User.Email,
+                PhoneNumber = student.User.PhoneNumber,
+                UserRole = student.User.Role!.RoleName
+            };
         }
 
-        public async Task<Student> StudentProfile()
+
+        public async Task<StudentResponseDto> StudentProfile()
         {
-            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new UnauthorizedAccessException("User not authenticated.");
+
             var userId = Convert.ToInt32(userIdClaim);
 
-            var student = await _studentRepo.GetAll().Include(s => s.User)
-                .Include(s => s.Enrollments).FirstOrDefaultAsync(s => s.UserId == userId);
+            var student = await _studentRepo.GetAll()
+                .Include(s => s.User).ThenInclude(u => u!.Role)
+                .FirstOrDefaultAsync(s => s.UserId == userId);
 
-            if (student == null)  throw new InvalidOperationException("Student profile not found.");
+            if (student == null)
+                throw new InvalidOperationException("Student profile not found.");
 
-            return student;
+            return new StudentResponseDto
+            {
+                StudentId = student.StudentId,
+                UniversityName = student.UnivercityName,
+                BirthDate = student.BirthDate,
+                UserId = student.User!.UserId,
+                FullName = student.User.FullName,
+                Email = student.User.Email,
+                PhoneNumber = student.User.PhoneNumber,
+                UserRole = student.User.Role!.RoleName
+            };
         }
 
-        public async Task<User> SystemAdminProfile()
+
+        public async Task<AdminProfileResponseDto> SystemAdminProfile()
         {
-            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userIdClaim = _httpContextAccessor.HttpContext? .User?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new UnauthorizedAccessException("User not authenticated.");
+
             var userId = Convert.ToInt32(userIdClaim);
 
             var admin = await _userRepo.GetAll().Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.UserId == userId && u.Role.Code == RoleEnum.Admin);
+                .FirstOrDefaultAsync(u => u.UserId == userId && u.Role!.Code == RoleEnum.Admin);
 
-            if (admin == null) throw new InvalidOperationException("Admin profile not found.");
+            if (admin == null)
+                throw new InvalidOperationException("Admin profile not found.");
 
-            return admin;
+            return new AdminProfileResponseDto
+            {
+                UserId = admin.UserId,
+                FullName = admin.FullName,
+                Email = admin.Email,
+                PhoneNumber = admin.PhoneNumber
+            };
         }
+
 
         public async Task UpdateUserProfile(StudentProfileUpdateDto dto)
         {
@@ -139,7 +191,7 @@ namespace Application.Service.Students.Implementation
             await _userRepo.SaveChanges();
         }
 
-        public async Task UpdateStudentProfileByAdmin(EditStudentProfileDto input)
+        public async Task UpdateStudentProfileByAdmin(AdminProfileResponseDto input)
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?
                 .FindFirstValue(ClaimTypes.NameIdentifier);
@@ -161,11 +213,11 @@ namespace Application.Service.Students.Implementation
             if (student == null)
                 throw new InvalidOperationException("Student not found.");
 
-            student.User.FullName = input.FullName;
+            student.User!.FullName = input.FullName;
             student.User.Email = input.Email;
             student.User.PhoneNumber = input.PhoneNumber;
             student.UnivercityName = input.UniversityName;
-            student.BirthDate = input.BirthDate;
+            student.BirthDate = input.Dob;
 
             _studentRepo.Update(student);
             _userRepo.Update(student.User);

@@ -14,5 +14,7 @@ namespace Application.DTOs.Students.Admin
         public string PhoneNumber { get; set; } = null!;
         public string UniversityName { get; set; } = null!;
         public DateTime BirthDate { get; set; }
+        public int UserId { get; internal set; }
+        public string UserRole { get; internal set; }
     }
 }
