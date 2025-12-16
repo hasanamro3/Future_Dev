@@ -62,10 +62,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSection["Key"];
 
-if (string.IsNullOrEmpty(jwtKey))
-    throw new Exception("JWT Key is missing in configuration.");
+
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -80,7 +78,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtSection["Issuer"],
             ValidAudience = jwtSection["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
             ),
 
             ClockSkew = TimeSpan.Zero

@@ -74,6 +74,7 @@ namespace Future_Dev.Controllers
             return Ok(await _courseService.GetCoursesByStudentId(studentId));
         }
         [HttpGet("GetCourseByUser")]
+
         public async Task<IActionResult> GetCoursesByUserId()
         {
             return Ok(await _courseService.GetMyCourses());

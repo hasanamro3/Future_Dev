@@ -56,7 +56,7 @@
                 CategoryId = dto.CategoryId
             };
 
-            _courseRepo.Insert(course);
+            await _courseRepo.Insert(course);
             await _courseRepo.SaveChanges();
         }
 

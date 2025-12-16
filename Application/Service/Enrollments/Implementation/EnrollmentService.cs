@@ -68,7 +68,7 @@ namespace Application.Service.Enrollments.Implementation
                 EnrollmentDate= dto.CreatedAt
             };
 
-            _enrollmentRepo.Insert(enrollment);
+            await _enrollmentRepo.Insert(enrollment);
             await _enrollmentRepo.SaveChanges();
         }
 
@@ -76,15 +76,15 @@ namespace Application.Service.Enrollments.Implementation
         {
             await IsAdmin();
 
-            var enrollment = await _enrollmentRepo.GetAll()
+            var enrollment = await _enrollmentRepo.GetAll().Include(e => e.Student)
+                    .ThenInclude(s => s!.User) .Include(e => e.Course)
                 .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
 
-            if (enrollment == null) throw new InvalidOperationException("Enrollment not found.");
+            if (enrollment == null)
+                throw new InvalidOperationException("Enrollment not found.");
 
-            if(enrollment.Course.CourseId!=null || enrollment.Student.StudentId!=null)
-                throw new InvalidOperationException("Cannot delete enrollment with existing course or student references.");
-
-            _enrollmentRepo.Delete(enrollment);
+ 
+            await _enrollmentRepo.Delete(enrollment);
             await _enrollmentRepo.SaveChanges();
         }
 

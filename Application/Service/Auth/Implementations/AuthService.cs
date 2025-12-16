@@ -41,19 +41,13 @@ namespace Application.Service.Auth.Implementations
             .Include(u => u.Role)
             .FirstOrDefaultAsync(u => u.Email.Trim().ToLower() == input.Email.Trim().ToLower());
 
-            if (user == null)
-            {
-                return null;
-            }
+            if (user == null)   return null;
 
             var passwordHasher = new PasswordHasher<User>();
             var passowrdResult = passwordHasher.VerifyHashedPassword(user, user.Password, input.Password);
 
-            if (passowrdResult == PasswordVerificationResult.Failed)
-            {
-                return null;
-            }
-
+            if (passowrdResult == PasswordVerificationResult.Failed)   return null;
+            
             var accessToken = GenerateAccessToken(user);
             var refreshToken = GenerateRefreshToken();
 
