@@ -10,5 +10,6 @@ namespace Domain.Entites.Models
         public int StudentId { get; set; }
         [ForeignKey("StudentId")]
         public Student? Student { get; set; }
+        public DateTime EnrollmentDate { get; set; }
     }
 }
