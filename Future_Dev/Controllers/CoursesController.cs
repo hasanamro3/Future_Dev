@@ -19,6 +19,7 @@ namespace Future_Dev.Controllers
         }
 
         [HttpGet("GetAllCourses")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _courseService.GetAllCourses());
@@ -59,6 +60,23 @@ namespace Future_Dev.Controllers
         public async Task<IActionResult> Search([FromQuery] string title)
         {
             return Ok(await _courseService.SearchCourses(title));
+        }
+
+        [HttpGet("MyCourses")]
+        public async Task<IActionResult> GetMyCourses()
+        {
+            return Ok(await _courseService.GetMyCourses());
+        }
+
+        [HttpGet("GetCourse")]
+        public async Task<IActionResult> GetCoursesByStudentId([FromQuery] int studentId)
+        {
+            return Ok(await _courseService.GetCoursesByStudentId(studentId));
+        }
+        [HttpGet("GetCourseByUser")]
+        public async Task<IActionResult> GetCoursesByUserId()
+        {
+            return Ok(await _courseService.GetMyCourses());
         }
 
     }

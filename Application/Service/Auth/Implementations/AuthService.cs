@@ -168,6 +168,7 @@ namespace Application.Service.Auth.Implementations
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
                 new Claim(ClaimTypes.Role, user.Role.RoleName),
+                new Claim("Phone", user.PhoneNumber),
             };
 
 

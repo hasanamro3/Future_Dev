@@ -55,10 +55,17 @@ namespace Application.Service.Enrollments.Implementation
 
             if (exists) throw new InvalidOperationException("Student already enrolled in this course.");
 
+            if (course.StartDate <= DateTime.UtcNow)
+                throw new InvalidOperationException("Cannot enroll in a course that has already started.");
+            if(course.EndDate <= DateTime.UtcNow)
+                throw new InvalidOperationException("Cannot enroll in a course that has already ended.");
+            if(dto.CreatedAt<= DateTime.UtcNow)
+                throw new InvalidOperationException("Enrollment date must be in the future.");
             var enrollment = new Enrollment
             {
                 StudentId = dto.StudentId,
-                CourseId = dto.CourseId
+                CourseId = dto.CourseId,
+                EnrollmentDate= dto.CreatedAt
             };
 
             _enrollmentRepo.Insert(enrollment);
@@ -73,6 +80,9 @@ namespace Application.Service.Enrollments.Implementation
                 .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
 
             if (enrollment == null) throw new InvalidOperationException("Enrollment not found.");
+
+            if(enrollment.Course.CourseId!=null || enrollment.Student.StudentId!=null)
+                throw new InvalidOperationException("Cannot delete enrollment with existing course or student references.");
 
             _enrollmentRepo.Delete(enrollment);
             await _enrollmentRepo.SaveChanges();

@@ -10,7 +10,6 @@ namespace Application.Service.Students.Interface
     {
         Task<User> SystemAdminProfile();
         Task<Student> StudentProfile();
-        Task<RegisterResponseDto> CreateStudent(CreateStudentRequestDto student);
         Task UpdateUserProfile(StudentProfileUpdateDto dto);
         Task UpdateAdminProfile(AdminProfileUpdateDto dto);
         Task DeleteStudent(int id);

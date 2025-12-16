@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Application.Service.Courses.Implementation
+﻿namespace Application.Service.Courses.Implementation
 {
     using Application.DTOs.Courses;
+    using Application.DTOs.Students.Admin;
     using Application.Repositories.Interfaces;
     using Application.Service.Courses.Interface;
     using Domain.Entites.Enums;
@@ -20,7 +17,7 @@ namespace Application.Service.Courses.Implementation
         private readonly IGenericRepository<User> _userRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public CourseService(IGenericRepository<Course> courseRepo,IGenericRepository<Category> categoryRepo,IGenericRepository<User> userRepo,IHttpContextAccessor httpContextAccessor)
+        public CourseService(IGenericRepository<Course> courseRepo, IGenericRepository<Category> categoryRepo, IGenericRepository<User> userRepo, IHttpContextAccessor httpContextAccessor)
         {
             _courseRepo = courseRepo;
             _categoryRepo = categoryRepo;
@@ -47,7 +44,7 @@ namespace Application.Service.Courses.Implementation
 
             var category = await _categoryRepo.GetById(dto.CategoryId);
 
-            if (category == null)  throw new InvalidOperationException("Category not found.");
+            if (category == null) throw new InvalidOperationException("Category not found.");
 
             var course = new Course
             {
@@ -69,7 +66,7 @@ namespace Application.Service.Courses.Implementation
 
             var course = await _courseRepo.GetById(courseId);
 
-            if (course == null)  throw new InvalidOperationException("Course not found.");
+            if (course == null) throw new InvalidOperationException("Course not found.");
 
             if (course.StartDate <= DateTime.UtcNow)
                 throw new InvalidOperationException("Cannot update a course that has already started.");
@@ -89,7 +86,7 @@ namespace Application.Service.Courses.Implementation
 
             var course = await _courseRepo.GetById(courseId);
 
-            if (course == null)  throw new InvalidOperationException("Course not found.");
+            if (course == null) throw new InvalidOperationException("Course not found.");
 
             _courseRepo.Delete(course);
             await _courseRepo.SaveChanges();
@@ -115,10 +112,57 @@ namespace Application.Service.Courses.Implementation
             };
         }
 
-        public async Task<List<CourseResponseDto>> GetAllCourses()
+        public async Task<List<CourseResponseDto>> GetCoursesByStudentId(int studentId)
         {
             await IsAdmin();
-            return await _courseRepo.GetAll().Include(c => c.Category)
+
+            var courses = await _courseRepo.GetAll()
+                .Include(c => c.Category).Include(c => c.Enrollments)
+                .Where(c => c.Enrollments.Any(e => e.StudentId == studentId)).ToListAsync();
+
+            return courses.Select(course => new CourseResponseDto
+            {
+                CourseId = course.CourseId,
+                Title = course.Title,
+                Description = course.Description,
+                Price = course.Price,
+                StartDate = course.StartDate,
+                EndDate = course.EndDate,
+                CategoryName = course.Category!.Name
+            }).ToList();
+        }
+
+        public async Task<List<CourseResponseDto>?> GetMyCourses()
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null) return null;
+
+            var userId = Convert.ToInt32(userIdClaim);
+
+            var courses = await _courseRepo.GetAll()
+             .Include(c => c.Category)
+             .Where(c => c.Enrollments.Any(e => e.StudentId == userId))
+             .Select(c => new CourseResponseDto
+             {
+                 CourseId = c.CourseId,
+                 Title = c.Title,
+                 Description = c.Description,
+                 Price = c.Price,
+                 StartDate = c.StartDate,
+                 EndDate = c.EndDate,
+                 CategoryName = c.Category!.Name
+             }).ToListAsync();
+
+            if (courses == null) return null;
+
+            return courses;
+        }
+
+        public async Task<List<CourseResponseDto>> GetAllCourses()
+        {
+
+            return await _courseRepo.GetAll().Include(c => c.Category).Where(c => c.StartDate > DateTime.UtcNow)
                 .Select(c => new CourseResponseDto
                 {
                     CourseId = c.CourseId,
@@ -134,7 +178,7 @@ namespace Application.Service.Courses.Implementation
         public async Task<List<CourseResponseDto>> SearchCourses(string title)
         {
             return await _courseRepo.GetAll().Include(c => c.Category)
-                .Where(c => c.Title.ToLower().Trim()==title.ToLower().Trim())
+                .Where(c => c.Title.ToLower().Trim() == title.ToLower().Trim())
                 .Select(c => new CourseResponseDto
                 {
                     CourseId = c.CourseId,
@@ -147,6 +191,31 @@ namespace Application.Service.Courses.Implementation
                 }).ToListAsync();
         }
 
-    }
+        public async Task<List<StudentResponseDto>?> GetStudentsByCourseId(int courseId)
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null) return null;
 
+            var userId = Convert.ToInt32(userIdClaim);
+
+            var students = await _courseRepo.GetAll()
+                .Include(c => c.Enrollments).ThenInclude(e => e.Student)
+                .Where(c => c.CourseId == courseId && c.Enrollments.Any(e => e.StudentId == userId))
+                .SelectMany(c => c.Enrollments)
+                .Where(e => e.CourseId == courseId)
+                .Select(e => new StudentResponseDto
+                {
+                    StudentId = e.Student!.StudentId,
+                    FullName = e.Student.User!.FullName,
+                    Email = e.Student.User!.Email,
+                    BirthDate = e.Student.BirthDate,
+                    UniversityName = e.Student.UnivercityName
+                }).ToListAsync();
+
+            if (students == null || !students.Any()) return null;
+
+            return students;
+        }
+
+    }
 }

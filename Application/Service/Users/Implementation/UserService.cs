@@ -23,77 +23,16 @@ namespace Application.Service.Students.Implementation
         private readonly IGenericRepository<Student> _studentRepo;
         private readonly IGenericRepository<User> _userRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IConfiguration _config;
-        private readonly IGenericRepository<RefreshToken> _refreshTokenRepo;
 
 
-        public UserService(IGenericRepository<User> userRepo, IGenericRepository<Student> studentRepo,IHttpContextAccessor httpContextAccessor, IGenericRepository<RefreshToken> refreshTokenRep, IConfiguration config)
+        public UserService(IGenericRepository<User> userRepo, IGenericRepository<Student> studentRepo,IHttpContextAccessor httpContextAccessor)
         {
             _userRepo = userRepo;
             _studentRepo = studentRepo;
             _httpContextAccessor = httpContextAccessor;
-            _config = config;
-            _refreshTokenRepo = refreshTokenRep;
+    
         }
-
-        public async Task<RegisterResponseDto> CreateStudent(CreateStudentRequestDto dto)
-        {
-            var existingUser = await _userRepo.GetAll()
-                .FirstOrDefaultAsync(u => u.Email!.Trim().ToLower() == dto.Email.Trim().ToLower());
-
-            if (existingUser != null)
-
-                throw new InvalidOperationException("A user with this email already exists.");
-
-            var passwordHasher = new PasswordHasher<User>();
-
-            var newUser = new User
-            {
-                FullName = dto.FullName,
-                Email = dto.Email,
-                PhoneNumber = dto.PhoneNumber,
-                RoleId = 2
-            };
-          
-            newUser.Password = passwordHasher.HashPassword(newUser, dto.Password);
-
-            await _userRepo.Insert(newUser);
-            await _userRepo.SaveChanges();
-
-            var newStudent = new Student
-            {
-                UserId = newUser.UserId,
-                BirthDate = dto.BirthDate,
-                UnivercityName = dto.UniversityName,
-            };
-
-
-            await _studentRepo.Insert(newStudent);
-            await _userRepo.SaveChanges();
-
-            var accessToken = GenerateAccessToken(newUser);
-            var refreshToken = GenerateRefreshToken();
-
-            await _refreshTokenRepo.Insert(new RefreshToken
-            {
-                Token = refreshToken,
-                UserId = newUser.UserId,
-                Expires = DateTime.UtcNow.AddDays(7)
-            });
-
-            await _refreshTokenRepo.SaveChanges();
-
-            return new RegisterResponseDto
-            {
-                UserId = newUser.UserId,
-                FullName = newUser.FullName,
-                Email = newUser.Email,
-                RoleId = newUser.RoleId,
-                AccessToken = accessToken,
-                RefreshToken = refreshToken
-            };
-        }
-
+       
         public async Task DeleteStudent(int userId)
         {
             var student = await _studentRepo.GetAll().Include(s => s.User)
@@ -234,55 +173,6 @@ namespace Application.Service.Students.Implementation
             await _userRepo.SaveChanges();
         }
 
-        // Helper methods to generate tokens (implementation depends on your requirements)
-        public string GenerateAccessToken(User user)
-        {
-            var jwtSection = _config.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]!));
-
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.RoleName),
-            };
-
-
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(15),
-                Issuer = jwtSection["Issuer"],
-                Audience = jwtSection["Audience"],
-                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
-            };
-
-            var handler = new JwtSecurityTokenHandler();
-            var token = handler.CreateToken(tokenDescriptor);
-            return handler.WriteToken(token);
-        }
-        public string GenerateRefreshToken()
-        {
-            var random = new byte[64];
-            RandomNumberGenerator.Fill(random);
-            return Convert.ToBase64String(random);
-        }
-        public async Task<string> RefreshToken(string refreshToken)
-        {
-            var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userId = Convert.ToInt32(userIdClaim);
-
-            var storedToken = _refreshTokenRepo.GetAll()
-                .FirstOrDefault(rt => rt.UserId == userId && rt.Token == refreshToken && rt.Expires > DateTime.UtcNow);
-            if (storedToken == null)
-            {
-                throw new SecurityTokenException("Invalid refresh token.");
-            }
-            var user = await _userRepo.GetById(storedToken.UserId);
-            return GenerateAccessToken(user);
-        }
 
     }
 
