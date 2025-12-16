@@ -48,6 +48,32 @@ namespace Infrastructure.Data
                 await context.Users.AddAsync(admin);
                 await context.SaveChangesAsync();
             }
+
+            if (!context.Categories.Any())
+            {
+                var category1 = new Category
+                {   
+                   Name = "IT"
+                };
+                var category2 = new Category
+                {   
+                   Name = "HR"
+                };
+                var category3= new Category
+                {   
+                   Name = "Sales"
+                };
+                var category4= new Category
+                {   
+                   Name = "Marketing"
+                };
+
+               
+
+                await context.Categories.AddRangeAsync(category1, category2, category3, category4);
+                await context.SaveChangesAsync();
+            }
+
         }
     }
 

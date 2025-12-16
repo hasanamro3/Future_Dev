@@ -17,12 +17,7 @@ namespace Application.Service.Enrollments.Implementation
         private readonly IGenericRepository<User> _userRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public EnrollmentService(
-            IGenericRepository<Enrollment> enrollmentRepo,
-            IGenericRepository<Student> studentRepo,
-            IGenericRepository<Course> courseRepo,
-            IGenericRepository<User> userRepo,
-            IHttpContextAccessor httpContextAccessor)
+        public EnrollmentService(IGenericRepository<Enrollment> enrollmentRepo,IGenericRepository<Student> studentRepo,IGenericRepository<Course> courseRepo,IGenericRepository<User> userRepo,IHttpContextAccessor httpContextAccessor)
         {
             _enrollmentRepo = enrollmentRepo;
             _studentRepo = studentRepo;
@@ -43,7 +38,6 @@ namespace Application.Service.Enrollments.Implementation
             if (Admin == null)
                 throw new UnauthorizedAccessException("Only system admin can manage enrollments.");
         }
-
 
         public async Task CreateEnrollment(CreateEnrollmentByAdminDto dto)
         {
@@ -103,7 +97,7 @@ namespace Application.Service.Enrollments.Implementation
             await IsAdmin();
 
             return await _enrollmentRepo.GetAll()
-                .Include(e => e.Student).ThenInclude(s => s.User)
+                .Include(e => e.Student).ThenInclude(s => s!.User)
                 .Include(e => e.Course).Where(e => e.StudentId == studentId)
                 .Select(e => new EnrollmentResponseDto
                 {
@@ -111,11 +105,23 @@ namespace Application.Service.Enrollments.Implementation
                     StudentName = e.Student!.User!.FullName,
                     CourseId = e.CourseId,
                     CourseTitle = e.Course!.Title
-                })
-                .ToListAsync();
+                }).ToListAsync();
         }
+        public async Task<List<EnrollmentResponseDto>> GetEnrollmentsByCourse(int courseId)
+        {
+            await IsAdmin();
 
-
+            return await _enrollmentRepo.GetAll()
+                .Include(e => e.Student).ThenInclude(s => s!.User)
+                .Include(e => e.Course).Where(e => e.CourseId == courseId)
+                .Select(e => new EnrollmentResponseDto
+                {
+                    StudentId = e.StudentId,
+                    StudentName = e.Student!.User!.FullName,
+                    CourseId = e.CourseId,
+                    CourseTitle = e.Course!.Title
+                }).ToListAsync();
+        }
 
     }
 }

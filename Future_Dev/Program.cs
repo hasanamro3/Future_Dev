@@ -18,17 +18,14 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers
 builder.Services.AddControllers();
 
-// DbContext
 builder.Services.AddDbContext<FutureDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("Default")
     )
 );
 
-// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -64,7 +61,6 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// JWT
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection["Key"];
 

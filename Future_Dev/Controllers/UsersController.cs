@@ -1,6 +1,7 @@
 ﻿using Application.DTOs;
 using Application.DTOs.Student.Admin;
 using Application.DTOs.Student.Student;
+using Application.DTOs.Students.Admin;
 using Application.Service.Students.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -89,6 +90,13 @@ public class UsersController : ControllerBase
         await _userService.UpdateUserProfile(dto);
         return Ok("Profile updated successfully.");
     }
+    [Authorize(Roles = "Admin")]
+    [HttpPut("createStudentByAdmin")]
+    public async Task<IActionResult> CreateStudentByAdmin([FromBody] CreateStudentRequestDto dto)
+    {
+        await _userService.CreateStudent(dto);
+        return Ok("Student profile created successfully.");
+    }
 
-   
+
 }

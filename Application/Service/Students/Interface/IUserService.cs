@@ -1,5 +1,7 @@
-﻿using Application.DTOs.Student.Admin;
+﻿using Application.DTOs.Auth.Register;
+using Application.DTOs.Student.Admin;
 using Application.DTOs.Student.Student;
+using Application.DTOs.Students.Admin;
 using Domain.Entites.Models;
 
 namespace Application.Service.Students.Interface
@@ -8,6 +10,7 @@ namespace Application.Service.Students.Interface
     {
         Task<User> SystemAdminProfile();
         Task<Student> StudentProfile();
+        Task<RegisterResponseDto> CreateStudent(CreateStudentRequestDto student);
         Task UpdateUserProfile(StudentProfileUpdateDto dto);
         Task UpdateAdminProfile(AdminProfileUpdateDto dto);
         Task DeleteStudent(int id);
