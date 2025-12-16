@@ -17,8 +17,6 @@ namespace Application.Service.Students.Implementation
         private readonly IGenericRepository<Student> _studentRepo;
         private readonly IGenericRepository<User> _userRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
-
         public UserService(IGenericRepository<User> userRepo, IGenericRepository<Student> studentRepo,IHttpContextAccessor httpContextAccessor)
         {
             _userRepo = userRepo;

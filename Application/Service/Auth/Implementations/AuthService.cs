@@ -199,7 +199,5 @@ namespace Application.Service.Auth.Implementations
             var user = await _userRepo.GetById(storedToken.UserId);
             return GenerateAccessToken(user);
         }
-
-      
     }
 }
