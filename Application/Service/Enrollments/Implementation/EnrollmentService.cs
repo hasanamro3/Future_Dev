@@ -16,7 +16,6 @@ namespace Application.Service.Enrollments.Implementation
         private readonly IGenericRepository<Course> _courseRepo;
         private readonly IGenericRepository<User> _userRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
-
         public EnrollmentService(IGenericRepository<Enrollment> enrollmentRepo,IGenericRepository<Student> studentRepo,IGenericRepository<Course> courseRepo,IGenericRepository<User> userRepo,IHttpContextAccessor httpContextAccessor)
         {
             _enrollmentRepo = enrollmentRepo;
