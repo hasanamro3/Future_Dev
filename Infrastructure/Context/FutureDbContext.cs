@@ -9,7 +9,6 @@ namespace Infrastructure.Context
         public FutureDbContext(DbContextOptions options) : base(options)
         {
         }
-
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Student> Students{ get; set; }
@@ -28,17 +27,12 @@ namespace Infrastructure.Context
             {
                 relationship.DeleteBehavior = DeleteBehavior.NoAction;
             }
-            modelBuilder.Entity<Enrollment>()
-       .HasKey(e => new { e.StudentId, e.CourseId });
+            modelBuilder.Entity<Enrollment>().HasKey(e => new { e.StudentId, e.CourseId });
 
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.Student)
-                .WithOne(s => s.User)
-                .HasForeignKey<Student>(s => s.UserId);
+            modelBuilder.Entity<User>().HasOne(u => u.Student).WithOne(s => s.User)
+                        .HasForeignKey<Student>(s => s.UserId);
 
-            modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
         }
     }
 }
