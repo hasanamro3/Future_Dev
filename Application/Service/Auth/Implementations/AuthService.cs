@@ -91,7 +91,7 @@ namespace Application.Service.Auth.Implementations
                 FullName = input.FullName,
                 Email = input.Email,
                 PhoneNumber = input.PhoneNumber,
-                RoleId = 2 // Assuming 2 is the RoleId for regular users/students
+                RoleId = 2 // 2 is RoleId for users or students
             };
             if(input.Password != input.ConfirmedPassword)
             {
@@ -155,8 +155,8 @@ namespace Application.Service.Auth.Implementations
             await _userRepo.SaveChanges();
         }
 
-
         //=========================================================================================== For Token Generation
+
         public string GenerateAccessToken(User user)
         {
             var jwtSection = _config.GetSection("Jwt");

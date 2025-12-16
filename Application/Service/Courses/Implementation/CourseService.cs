@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Service.Courses.Implementation
 {
@@ -73,7 +71,6 @@ namespace Application.Service.Courses.Implementation
 
             if (course == null)  throw new InvalidOperationException("Course not found.");
 
-            // ❌ لا تعديل بعد بدء الكورس
             if (course.StartDate <= DateTime.UtcNow)
                 throw new InvalidOperationException("Cannot update a course that has already started.");
 
