@@ -149,6 +149,7 @@ namespace Application.Service.Auth.Implementations
             await _userRepo.SaveChanges();
         }
 
+
         //=========================================================================================== For Token Generation
 
         public string GenerateAccessToken(User user)

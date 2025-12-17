@@ -63,8 +63,6 @@ builder.Services.AddSwaggerGen(c =>
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 
-
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -78,7 +76,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = jwtSection["Issuer"],
             ValidAudience = jwtSection["Audience"],
             IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
             ),
 
             ClockSkew = TimeSpan.Zero
@@ -92,7 +90,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
-
 
 var app = builder.Build();
 

@@ -1,5 +1,4 @@
-﻿using Application.DTOs.Auth.Register;
-using Application.DTOs.Student.Admin;
+﻿using Application.DTOs.Student.Admin;
 using Application.DTOs.Student.Student;
 using Application.DTOs.Students.Admin;
 using Application.Repositories.Interfaces;
@@ -29,14 +28,16 @@ namespace Application.Service.Students.Implementation
         {
             var student = await _studentRepo.GetAll().Include(s => s.User)
                 .Include(s => s.Enrollments).FirstOrDefaultAsync(s => s.UserId == userId);
+            if(student!.UserId == 1)
+                throw new InvalidOperationException("Cannont Delete System Admin.");
 
             if (student == null)  throw new InvalidOperationException("Student not found.");
 
             if (student.Enrollments.Any())
                 throw new InvalidOperationException("Student is registered in one or more courses.");
 
-            _studentRepo.Delete(student);
-            _userRepo.Delete(student.User);
+            await _studentRepo.Delete(student);
+            await _userRepo.Delete(student.User!);
 
             await _userRepo.SaveChanges();
         }
@@ -58,7 +59,6 @@ namespace Application.Service.Students.Implementation
                     UserRole = s.User.Role!.RoleName
                 }).ToListAsync();
         }
-
 
         public async Task<StudentResponseDto?> GetStudent(int studentId)
         {
@@ -83,7 +83,6 @@ namespace Application.Service.Students.Implementation
                 UserRole = student.User.Role!.RoleName
             };
         }
-
 
         public async Task<StudentResponseDto> StudentProfile()
         {
@@ -114,7 +113,6 @@ namespace Application.Service.Students.Implementation
             };
         }
 
-
         public async Task<AdminProfileResponseDto> SystemAdminProfile()
         {
             var userIdClaim = _httpContextAccessor.HttpContext? .User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -138,7 +136,6 @@ namespace Application.Service.Students.Implementation
                 PhoneNumber = admin.PhoneNumber
             };
         }
-
 
         public async Task UpdateUserProfile(StudentProfileUpdateDto dto)
         {
@@ -222,8 +219,6 @@ namespace Application.Service.Students.Implementation
 
             await _userRepo.SaveChanges();
         }
-
-
     }
 
 }

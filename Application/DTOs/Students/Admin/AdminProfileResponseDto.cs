@@ -13,6 +13,6 @@ namespace Application.DTOs.Student.Admin
 
         public int StudentId { get; set; }
         public DateTime Dob { get; set; }
-        public string UniversityName { get; internal set; }
+        public string UniversityName { get;  set; }
     }
 }

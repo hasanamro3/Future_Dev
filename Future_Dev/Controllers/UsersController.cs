@@ -20,7 +20,7 @@ public class UsersController : ControllerBase
 
   
     [Authorize(Roles = "Admin")]
-    [HttpGet]
+    [HttpGet("GetAllStudents")]
     public async Task<IActionResult> GetAllStudents()
     {
         var students = await _userService.GetAllStudents();
@@ -28,7 +28,7 @@ public class UsersController : ControllerBase
     }
 
     [Authorize(Roles = "Admin")]
-    [HttpGet("student/{id}")]
+    [HttpGet("GetStudent/{id}")]
     public async Task<IActionResult> GetStudent(int id)
     {
         var student = await _userService.GetStudent(id);

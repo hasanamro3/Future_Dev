@@ -99,7 +99,6 @@
             await _courseRepo.SaveChanges();
         }
 
-
         public async Task DeleteCourse(int courseId)
         {
             await IsAdmin();
@@ -237,6 +236,5 @@
 
             return students;
         }
-
     }
 }

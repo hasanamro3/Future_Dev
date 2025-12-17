@@ -1,8 +1,6 @@
-﻿using Application.DTOs.Auth.Register;
-using Application.DTOs.Student.Admin;
+﻿using Application.DTOs.Student.Admin;
 using Application.DTOs.Student.Student;
 using Application.DTOs.Students.Admin;
-using Domain.Entites.Models;
 
 namespace Application.Service.Students.Interface
 {

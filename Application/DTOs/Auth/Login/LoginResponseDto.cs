@@ -1,6 +1,4 @@
 ﻿
-using Domain.Entites.Models;
-
 namespace Application.DTOs.Auth.Login
 {
     public class LoginResponseDto

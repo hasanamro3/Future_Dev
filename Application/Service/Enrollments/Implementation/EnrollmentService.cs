@@ -16,6 +16,7 @@ namespace Application.Service.Enrollments.Implementation
         private readonly IGenericRepository<Course> _courseRepo;
         private readonly IGenericRepository<User> _userRepo;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         public EnrollmentService(IGenericRepository<Enrollment> enrollmentRepo,IGenericRepository<Student> studentRepo,IGenericRepository<Course> courseRepo,IGenericRepository<User> userRepo,IHttpContextAccessor httpContextAccessor)
         {
             _enrollmentRepo = enrollmentRepo;
@@ -32,7 +33,7 @@ namespace Application.Service.Enrollments.Implementation
             var userId = Convert.ToInt32(userIdClaim);
 
             var Admin = await _userRepo.GetAll().Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.UserId == userId && u.Role.Code == RoleEnum.Admin);
+                .FirstOrDefaultAsync(u => u.UserId == userId && u.Role!.Code == RoleEnum.Admin);
 
             if (Admin == null)
                 throw new UnauthorizedAccessException("Only system admin can manage enrollments.");
@@ -116,6 +117,7 @@ namespace Application.Service.Enrollments.Implementation
                     CourseTitle = e.Course!.Title
                 }).ToListAsync();
         }
+
         public async Task<List<EnrollmentResponseDto>> GetEnrollmentsByCourse(int courseId)
         {
             await IsAdmin();
@@ -131,6 +133,5 @@ namespace Application.Service.Enrollments.Implementation
                     CourseTitle = e.Course!.Title
                 }).ToListAsync();
         }
-
     }
 }
