@@ -1,7 +1,6 @@
 ﻿using Application.DTOs.Enrollment;
 using Application.Service.Enrollments.Interface;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Future_Dev.Controllers
@@ -31,8 +30,8 @@ namespace Future_Dev.Controllers
             return Ok(await _enrollmentService.GetAllEnrollments());
         }
 
-        [HttpGet("GetByStudent/{studentId}")]
-        public async Task<IActionResult> GetByStudent(int studentId)
+        [HttpGet("GetEnrollmentsByStudent/{studentId}")]
+        public async Task<IActionResult> GetEnrollmentsByStudent(int studentId)
         {
             return Ok(await _enrollmentService.GetEnrollmentsByStudent(studentId));
         }

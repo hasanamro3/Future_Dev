@@ -8,7 +8,7 @@ namespace Future_Dev.Controllers
 
     [ApiController]
     [Route("api/courses")]
-    [Authorize]
+    [Authorize(Roles ="Admin")]
     public class CoursesController : ControllerBase
     {
         private readonly ICourseService _courseService;
@@ -62,6 +62,7 @@ namespace Future_Dev.Controllers
             return Ok(await _courseService.SearchCourses(title));
         }
 
+        [Authorize(Roles = "User,Admin")]
         [HttpGet("MyCourses")]
         public async Task<IActionResult> GetMyCourses()
         {
@@ -73,9 +74,9 @@ namespace Future_Dev.Controllers
         {
             return Ok(await _courseService.GetCoursesByStudentId(studentId));
         }
-        [HttpGet("GetCourseByUser")]
 
-        public async Task<IActionResult> GetCoursesByUserId()
+        [HttpGet("GetCourseByUser")]
+        public async Task<IActionResult> GetCoursesByUserId([FromQuery] int studentId)
         {
             return Ok(await _courseService.GetMyCourses());
         }

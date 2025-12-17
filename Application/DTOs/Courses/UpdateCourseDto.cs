@@ -11,6 +11,7 @@ namespace Application.DTOs.Courses
         public string Title { get; set; } = null!;
         public string Description { get; set; } = null!;
         public double Price { get; set; }
+        public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
     }
 

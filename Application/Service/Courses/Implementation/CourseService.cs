@@ -46,13 +46,17 @@
 
             if (category == null) throw new InvalidOperationException("Category not found.");
 
+            if (dto.StartDate > dto.EndDate)
+
+                throw new InvalidOperationException("Invalid Dates.");
+
             var course = new Course
             {
                 Title = dto.Title,
                 Description = dto.Description,
                 Price = dto.Price,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
+                StartDate = dto.StartDate.ToUniversalTime(),
+                EndDate = dto.EndDate.ToUniversalTime(),
                 CategoryId = dto.CategoryId
             };
 
@@ -64,21 +68,37 @@
         {
             await IsAdmin();
 
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
             var course = await _courseRepo.GetById(courseId);
 
-            if (course == null) throw new InvalidOperationException("Course not found.");
+            if (course == null)
+                throw new InvalidOperationException("Course not found.");
 
             if (course.StartDate <= DateTime.UtcNow)
                 throw new InvalidOperationException("Cannot update a course that has already started.");
 
-            course.Title = dto.Title;
-            course.Description = dto.Description;
+            if (string.IsNullOrWhiteSpace(dto.Title))
+                throw new InvalidOperationException("Course title is required.");
+
+            if (dto.Price < 0)
+                throw new InvalidOperationException("Course price cannot be negative.");
+
+            if (dto.StartDate >= dto.EndDate)
+                throw new InvalidOperationException("End date must be after start date.");
+
+
+            course.Title = dto.Title.Trim();
+            course.Description = dto.Description!.Trim();
             course.Price = dto.Price;
+            course.StartDate = dto.StartDate;
             course.EndDate = dto.EndDate;
 
             _courseRepo.Update(course);
             await _courseRepo.SaveChanges();
         }
+
 
         public async Task DeleteCourse(int courseId)
         {
@@ -162,7 +182,8 @@
         public async Task<List<CourseResponseDto>> GetAllCourses()
         {
 
-            return await _courseRepo.GetAll().Include(c => c.Category).Where(c => c.StartDate > DateTime.UtcNow)
+            return await _courseRepo.GetAll().Include(c => c.Category).Where(c => c.StartDate >= DateTime.UtcNow)
+
                 .Select(c => new CourseResponseDto
                 {
                     CourseId = c.CourseId,
