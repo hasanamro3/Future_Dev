@@ -1,6 +1,6 @@
 ﻿using Application.DTOs.Student.Admin;
 using Application.DTOs.Student.Student;
-using Application.DTOs.Students.Admin;
+using Application.DTOs.Students.Student;
 using Application.Repositories.Interfaces;
 using Application.Service.Students.Interface;
 using Domain.Entites.Enums;
@@ -142,27 +142,23 @@ namespace Application.Service.Students.Implementation
             var userIdClaim = _httpContextAccessor.HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userId = Convert.ToInt32(userIdClaim);
 
-            var user = await _userRepo.GetAll() .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
+            var student = await _userRepo.GetAll().Include(u => u.Student).Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId && u.Student!.UserId == userId);
 
-            if (user == null) throw new InvalidOperationException("User not found.");
+            if (student == null) throw new InvalidOperationException("Student not found.");
 
-            if (user.Role.Code != RoleEnum.User) throw new UnauthorizedAccessException("Access denied.");
+            if (student.Role!.Code != RoleEnum.User) throw new UnauthorizedAccessException("Access denied.");
 
-            var student = await _studentRepo.GetAll().FirstOrDefaultAsync(s => s.UserId == userId);
 
-            if (student == null)  throw new InvalidOperationException("Student not found.");
+            student.FullName = dto.FullName;
+            student.Email = dto.Email;
+            student.PhoneNumber = dto.PhoneNumber;
+            student.Student!.UnivercityName = dto.UniversityName;
+            student.Student!.BirthDate = dto.BirthDate;
 
-            user.FullName = dto.FullName;
-            user.Email = dto.Email;
-            user.PhoneNumber = dto.PhoneNumber;
-            student.UnivercityName = dto.UniversityName;
-            student.BirthDate = dto.BirthDate;
-
-            _userRepo.Update(user);
-            _studentRepo.Update(student);
-
+            _userRepo.Update(student);
             await _userRepo.SaveChanges();
+            await _studentRepo.SaveChanges();
         }
 
         public async Task UpdateAdminProfile(AdminProfileUpdateDto dto)

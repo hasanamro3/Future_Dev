@@ -1,5 +1,5 @@
 ﻿using Application.DTOs.Courses;
-using Application.DTOs.Students.Admin;
+using Application.DTOs.Students.Student;
 
 namespace Application.Service.Courses.Interface
 {

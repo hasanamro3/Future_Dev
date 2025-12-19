@@ -1,6 +1,6 @@
 ﻿using Application.DTOs.Student.Admin;
 using Application.DTOs.Student.Student;
-using Application.DTOs.Students.Admin;
+using Application.DTOs.Students.Student;
 
 namespace Application.Service.Students.Interface
 {

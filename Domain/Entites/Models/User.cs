@@ -14,7 +14,8 @@ namespace Domain.Entites.Models
         [Required]
         [DataType(DataType.Password)]
         public string Password{ get; set; }
-        [Phone]
+        [Required]
+        [RegularExpression(@"^(?:\+962|00962|0)7[789]\d{7}$", ErrorMessage = "Invalid Phone Number.")]
         public string PhoneNumber { get; set; }
         [Required]
         public int RoleId { get; set; }

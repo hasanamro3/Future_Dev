@@ -1,7 +1,7 @@
 ﻿namespace Application.Service.Courses.Implementation
 {
     using Application.DTOs.Courses;
-    using Application.DTOs.Students.Admin;
+    using Application.DTOs.Students.Student;
     using Application.Repositories.Interfaces;
     using Application.Service.Courses.Interface;
     using Domain.Entites.Enums;
@@ -213,28 +213,28 @@
 
         public async Task<List<StudentResponseDto>?> GetStudentsByCourseId(int courseId)
         {
-            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null) return null;
+            var hasEnrollments = await _courseRepo.GetAll()
+                .AnyAsync(c =>c.CourseId == courseId && c.Enrollments.Any());
 
-            var userId = Convert.ToInt32(userIdClaim);
+            if (!hasEnrollments)  return null;
+
 
             var students = await _courseRepo.GetAll()
-                .Include(c => c.Enrollments).ThenInclude(e => e.Student)
-                .Where(c => c.CourseId == courseId && c.Enrollments.Any(e => e.StudentId == userId))
-                .SelectMany(c => c.Enrollments)
-                .Where(e => e.CourseId == courseId)
-                .Select(e => new StudentResponseDto
-                {
-                    StudentId = e.Student!.StudentId,
-                    FullName = e.Student.User!.FullName,
-                    Email = e.Student.User!.Email,
-                    BirthDate = e.Student.BirthDate,
-                    UniversityName = e.Student.UnivercityName
-                }).ToListAsync();
+                   .Where(c => c.CourseId == courseId).Include(c => c.Enrollments)
+                   .ThenInclude(e => e.Student).ThenInclude(s => s!.User)
+                   .Select(c => c.Enrollments
+                       .Select(e => new StudentResponseDto
+                       {
+                           StudentId = e.Student!.StudentId,
+                           FullName = e.Student.User!.FullName,
+                           UniversityName = e.Student.UnivercityName
+                       }).ToList()
+                    ).FirstOrDefaultAsync();
 
-            if (students == null || !students.Any()) return null;
 
-            return students;
+            return students!.Any() ? students : null;
         }
+
+
     }
 }

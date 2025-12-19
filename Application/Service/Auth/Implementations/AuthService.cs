@@ -4,6 +4,7 @@ using Application.DTOs.Auth.Password;
 using Application.DTOs.Auth.Register;
 using Application.Repositories.Interfaces;
 using Application.Service.Auth.Interfaces;
+using Domain.Entites.Enums;
 using Domain.Entites.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -85,12 +86,13 @@ namespace Application.Service.Auth.Implementations
                 FullName = input.FullName,
                 Email = input.Email,
                 PhoneNumber = input.PhoneNumber,
-                RoleId = 2 // 2 is RoleId for users or students
+                RoleId = Convert.ToInt32(RoleEnum.User) 
             };
+
             if(input.Password != input.ConfirmedPassword)
-            {
-                throw new InvalidOperationException("Password and Confirm Password do not match.");
-            }
+
+                   throw new InvalidOperationException("Password and Confirm Password do not match.");
+            
             newUser.Password = passwordHasher.HashPassword(newUser, input.Password);
 
             await _userRepo.Insert(newUser);
@@ -156,13 +158,14 @@ namespace Application.Service.Auth.Implementations
         {
             var jwtSection = _config.GetSection("Jwt");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]!));
+            var roleName = user.RoleId == 1 ? "Admin" : "User";
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                 new Claim(ClaimTypes.Name, user.FullName),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.RoleName),
+                new Claim(ClaimTypes.Role, roleName),
             };
 
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Application.DTOs.Students.Admin
+namespace Application.DTOs.Students.Student
 {
     public class StudentResponseDto
     {
