@@ -89,7 +89,12 @@ namespace Future_Dev.Controllers
         {
             return Ok(await _courseService.GetStudentsByCourseId(courseId));
         }
-
+        [HttpGet("GetAllCategories")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllCategories()
+        {
+            return Ok(await _courseService.GetAllCategories());
+        }
     }
 
 }

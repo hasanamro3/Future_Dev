@@ -1,5 +1,6 @@
 ﻿namespace Application.Service.Courses.Implementation
 {
+    using Application.DTOs.Category;
     using Application.DTOs.Courses;
     using Application.DTOs.Students.Student;
     using Application.Repositories.Interfaces;
@@ -235,6 +236,17 @@
             return students!.Any() ? students : null;
         }
 
+        public async Task<List<CategoriesDto>> GetAllCategories()
+        {
+            var categories = await _categoryRepo.GetAll().ToListAsync();
+
+            var categoriesDto = categories.Select(c => new CategoriesDto
+            {
+                CategoryName = c.Name
+            }).ToList();
+
+            return categoriesDto;
+        }
 
     }
 }

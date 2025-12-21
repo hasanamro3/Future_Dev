@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Courses;
+﻿using Application.DTOs.Category;
+using Application.DTOs.Courses;
 using Application.DTOs.Students.Student;
 
 namespace Application.Service.Courses.Interface
@@ -14,6 +15,7 @@ namespace Application.Service.Courses.Interface
         Task<List<CourseResponseDto>> GetAllCourses();
         Task<List<CourseResponseDto>> SearchCourses(string title);
         Task<List<StudentResponseDto>?> GetStudentsByCourseId(int courseId);
+        Task<List<CategoriesDto>> GetAllCategories();
     }
 
 }
