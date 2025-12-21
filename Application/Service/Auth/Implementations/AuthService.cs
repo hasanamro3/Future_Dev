@@ -92,7 +92,9 @@ namespace Application.Service.Auth.Implementations
             if(input.Password != input.ConfirmedPassword)
 
                    throw new InvalidOperationException("Password and Confirm Password do not match.");
-            
+
+            if(input.Password.Length < 8 || input.Password.Length > 24)
+                throw new InvalidOperationException("Password must be between 8 and 24 characters long.");
             newUser.Password = passwordHasher.HashPassword(newUser, input.Password);
 
             await _userRepo.Insert(newUser);
